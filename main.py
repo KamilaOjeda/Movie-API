@@ -74,3 +74,11 @@ def update_movie(id: int, tittle: str = Body(), overview: str = Body(), year: in
             item["rating"] = rating, 
             item["category"] = category
             return movies
+
+# Método DELETE, como parámetro de ruta
+@app.delete("/movies/{id}", tags=["movies"])
+def update_movie(id: int):
+    for item in movies:
+        if item["id"] == id:
+            movies.remove(item)
+            return movies
