@@ -39,3 +39,8 @@ def get_movie(id: int):
         if item["id"] == id:
             return item
     return []
+
+# Parámetros query, cuando no se indica en la ruta, si no como parámetro
+@app.get("/movies/", tags=["movies"])
+def get_movies_by_category(category: str, year: int):
+    return category, year
