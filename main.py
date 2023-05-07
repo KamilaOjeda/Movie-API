@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Body
+from fastapi import FastAPI, Body, Path, Query
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -61,7 +61,7 @@ def get_movies():
 
 # Parámetros de ruta
 @app.get("/movies/{id}", tags=["movies"])
-def get_movie(id: int):
+def get_movie(id: int = Path(ge=1, le=2000)): ## Agregamos validaciones de parámetros de ruta con Path
     for item in movies:
         if item["id"] == id:
             return item
@@ -74,7 +74,7 @@ def get_movie(id: int):
 
 # Parámetros query, filtrando por categoría
 @app.get("/movies/", tags=["movies"])
-def get_movies_by_category(category: str, year:int):
+def get_movies_by_category(category: str = Query(min_length=5, max_length=15)): ## Agregamos validación de parámetros query
     return [ item for item in movies if item["category"] == category]
 
 # Método POST
@@ -119,3 +119,7 @@ def update_movie(id: int):
 # Validaciones de tipos de datos
 ## importamos field desde pydantic
 ## indicar en el esquema con la palabra Field
+
+# Validaciones de parámetros de ruta y query
+## importamos path desde fastapi
+## importamos query desde fastapi
