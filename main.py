@@ -41,6 +41,14 @@ def get_movie(id: int):
     return []
 
 # Parámetros query, cuando no se indica en la ruta, si no como parámetro
+# @app.get("/movies/", tags=["movies"])
+# def get_movies_by_category(category: str, year: int):
+#     return category, year
+
+# Parámetros query, filtrando por categoría
 @app.get("/movies/", tags=["movies"])
-def get_movies_by_category(category: str, year: int):
-    return category, year
+def get_movies_by_category(category: str, year:int):
+    return [ item for item in movies if item["category"] == category]
+
+
+# Método POST
