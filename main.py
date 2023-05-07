@@ -62,3 +62,15 @@ def create_movie(id: int = Body(), tittle: str = Body(), overview: str = Body(),
         "category": category
     })
     return movies
+
+# Método PUT, como parámetro de ruta
+@app.put("/movies/{id}", tags=["movies"])
+def update_movie(id: int, tittle: str = Body(), overview: str = Body(), year: int = Body(), rating: float = Body(), category: str = Body()):
+    for item in movies:
+        if item["id"] == id:
+            item["tittle"] = tittle,
+            item["overview"] = overview,
+            item["year"] = year,
+            item["rating"] = rating, 
+            item["category"] = category
+            return movies
