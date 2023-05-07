@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Body, Path, Query
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 
 app = FastAPI()
 app.title = "Mi primera app con FastAPI"
@@ -55,17 +55,18 @@ movies = [
 def message():
     return HTMLResponse("<h1>Hello world<h1>")
 
-@app.get("/movies", tags=["movies"])
-def get_movies():
-    return movies
+@app.get("/movies", tags=["movies"], response_model=List[Movie])
+def get_movies() -> List[Movie]:
+    return JSONResponse(content = movies)
 
 # Parámetros de ruta
-@app.get("/movies/{id}", tags=["movies"])
-def get_movie(id: int = Path(ge=1, le=2000)): ## Agregamos validaciones de parámetros de ruta con Path
+@app.get("/movies/{id}", tags=["movies"], response_model=Movie)
+def get_movie(id: int = Path(ge=1, le=2000)) -> Movie: ## Agregamos validaciones de parámetros de ruta con Path
     for item in movies:
         if item["id"] == id:
-            return item
-    return []
+            return JSONResponse(content = item)
+    return JSONResponse(content = [])
+
 
 # Parámetros query, cuando no se indica en la ruta, si no como parámetro
 # @app.get("/movies/", tags=["movies"])
@@ -73,16 +74,17 @@ def get_movie(id: int = Path(ge=1, le=2000)): ## Agregamos validaciones de pará
 #     return category, year
 
 # Parámetros query, filtrando por categoría
-@app.get("/movies/", tags=["movies"])
-def get_movies_by_category(category: str = Query(min_length=5, max_length=15)): ## Agregamos validación de parámetros query
-    return [ item for item in movies if item["category"] == category]
+@app.get("/movies/", tags=["movies"], response_model=List[Movie])
+def get_movies_by_category(category: str = Query(min_length=5, max_length=15)) -> List[Movie]: ## Agregamos validación de parámetros query
+    data = [ item for item in movies if item["category"] == category]
+    return JSONResponse(content=data)
 
 # Método POST
-@app.post("/movies", tags=["movies"])
+@app.post("/movies", tags=["movies"], response_model=dict)
 # def create_movie(id: int = Body(), tittle: str = Body(), overview: str = Body(), year: int = Body(), rating: float = Body(), category: str = Body()):
-def create_movie(movie: Movie): ## En vez de poner cada elemento del body, utilizamos este atajo
+def create_movie(movie: Movie) -> dict: ## En vez de poner cada elemento del body, utilizamos este atajo
     movies.append(movie) # Insertar datos
-    return movies
+    return JSONResponse(content={"message": "Se ha registrado la película"}) # devolvemos un diccionario
 
 # # Método PUT, como parámetro de ruta
 # @app.put("/movies/{id}", tags=["movies"])
@@ -97,8 +99,8 @@ def create_movie(movie: Movie): ## En vez de poner cada elemento del body, utili
 #             return movies
 
 # Método PUT, como parámetro de ruta
-@app.put("/movies/{id}", tags=["movies"])
-def update_movie(id: int, movie: Movie):
+@app.put("/movies/{id}", tags=["movies"], response_model=dict)
+def update_movie(id: int, movie: Movie) -> dict:
     for item in movies:
         if item["id"] == id:
             item["tittle"] = movie.tittle
@@ -106,15 +108,17 @@ def update_movie(id: int, movie: Movie):
             item["year"] = movie.year
             item["rating"] = movie.rating
             item["category"] = movie.category
-            return movies
+            return JSONResponse(content={"message": "Se ha modificado la película"}) # devolvemos un diccionario
+
 
 # Método DELETE, como parámetro de ruta
-@app.delete("/movies/{id}", tags=["movies"])
-def update_movie(id: int):
+@app.delete("/movies/{id}", tags=["movies"], response_model=dict)
+def update_movie(id: int) -> dict:
     for item in movies:
         if item["id"] == id:
             movies.remove(item)
-            return movies
+            return JSONResponse(content={"message": "Se ha eliminado la película"}) # devolvemos un diccionario
+
         
 # Validaciones de tipos de datos
 ## importamos field desde pydantic
@@ -123,3 +127,7 @@ def update_movie(id: int):
 # Validaciones de parámetros de ruta y query
 ## importamos path desde fastapi
 ## importamos query desde fastapi
+
+# Tipos de respuestas
+## importamos JSONResponse desde fastapi.responses, sirve para enviar contenido en formato JSON al cliente
+## importamos List desde typing, sirve para indicar el modelo de respuesta
