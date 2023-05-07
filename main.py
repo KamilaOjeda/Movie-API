@@ -2,10 +2,16 @@ from fastapi import FastAPI, Body, Path, Query
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List
+from jwt_manager import create_token
 
 app = FastAPI()
 app.title = "Mi primera app con FastAPI"
 app.version = "0.0.1"
+
+# Creamos un nuevo modelo para el usuario
+class User(BaseModel):
+    email: str
+    password: str
 
 # Creamos la clase/esquema que va a contener tod la info de cada película
 class Movie(BaseModel):
@@ -51,9 +57,14 @@ movies = [
 ]
 
 # Método GET
-@app.get('/', tags=["home"])
+@app.get("/", tags=["home"])
 def message():
     return HTMLResponse("<h1>Hello world<h1>")
+
+# Creamos nueva ruta que permita al usuario loguearse
+@app.post("/login", tags=["auth"])
+def login(user: User):
+    return user
 
 @app.get("/movies", tags=["movies"], response_model=List[Movie], status_code=200)
 def get_movies() -> List[Movie]:
@@ -66,8 +77,6 @@ def get_movie(id: int = Path(ge=1, le=2000)) -> Movie: ## Agregamos validaciones
         if item["id"] == id:
             return JSONResponse(content = item)
     return JSONResponse(status_code=404, content={"message": "No se ha encontrado la página"})
-    
-
 
 # Parámetros query, cuando no se indica en la ruta, si no como parámetro
 # @app.get("/movies/", tags=["movies"])
@@ -111,7 +120,6 @@ def update_movie(id: int, movie: Movie) -> dict:
             item["category"] = movie.category
             return JSONResponse(status_code=200, content={"message": "Se ha modificado la película"}) # devolvemos un diccionario
 
-
 # Método DELETE, como parámetro de ruta
 @app.delete("/movies/{id}", tags=["movies"], response_model=dict, status_code=200)
 def update_movie(id: int) -> dict:
@@ -135,3 +143,8 @@ def update_movie(id: int) -> dict:
 
 #Códigos de estado
 ## status_code
+
+# Función para generar tokens con pyjwt
+## pip3 install pyjwt
+## creamos archivo jwt_manager.py
+## ahora importamos create_token(que está en el el archivo jwt_manager.py)
