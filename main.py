@@ -55,9 +55,9 @@ movies = [
 def message():
     return HTMLResponse("<h1>Hello world<h1>")
 
-@app.get("/movies", tags=["movies"], response_model=List[Movie])
+@app.get("/movies", tags=["movies"], response_model=List[Movie], status_code=200)
 def get_movies() -> List[Movie]:
-    return JSONResponse(content = movies)
+    return JSONResponse(status_code=200, content = movies)
 
 # Parámetros de ruta
 @app.get("/movies/{id}", tags=["movies"], response_model=Movie)
@@ -65,7 +65,8 @@ def get_movie(id: int = Path(ge=1, le=2000)) -> Movie: ## Agregamos validaciones
     for item in movies:
         if item["id"] == id:
             return JSONResponse(content = item)
-    return JSONResponse(content = [])
+    return JSONResponse(status_code=404, content={"message": "No se ha encontrado la página"})
+    
 
 
 # Parámetros query, cuando no se indica en la ruta, si no como parámetro
@@ -74,17 +75,17 @@ def get_movie(id: int = Path(ge=1, le=2000)) -> Movie: ## Agregamos validaciones
 #     return category, year
 
 # Parámetros query, filtrando por categoría
-@app.get("/movies/", tags=["movies"], response_model=List[Movie])
+@app.get("/movies/", tags=["movies"], response_model=List[Movie], status_code=200)
 def get_movies_by_category(category: str = Query(min_length=5, max_length=15)) -> List[Movie]: ## Agregamos validación de parámetros query
     data = [ item for item in movies if item["category"] == category]
     return JSONResponse(content=data)
 
 # Método POST
-@app.post("/movies", tags=["movies"], response_model=dict)
+@app.post("/movies", tags=["movies"], response_model=dict, status_code=201)
 # def create_movie(id: int = Body(), tittle: str = Body(), overview: str = Body(), year: int = Body(), rating: float = Body(), category: str = Body()):
 def create_movie(movie: Movie) -> dict: ## En vez de poner cada elemento del body, utilizamos este atajo
     movies.append(movie) # Insertar datos
-    return JSONResponse(content={"message": "Se ha registrado la película"}) # devolvemos un diccionario
+    return JSONResponse(status_code=201, content={"message": "Se ha registrado la película"}) # devolvemos un diccionario
 
 # # Método PUT, como parámetro de ruta
 # @app.put("/movies/{id}", tags=["movies"])
@@ -99,7 +100,7 @@ def create_movie(movie: Movie) -> dict: ## En vez de poner cada elemento del bod
 #             return movies
 
 # Método PUT, como parámetro de ruta
-@app.put("/movies/{id}", tags=["movies"], response_model=dict)
+@app.put("/movies/{id}", tags=["movies"], response_model=dict, status_code=200)
 def update_movie(id: int, movie: Movie) -> dict:
     for item in movies:
         if item["id"] == id:
@@ -108,16 +109,16 @@ def update_movie(id: int, movie: Movie) -> dict:
             item["year"] = movie.year
             item["rating"] = movie.rating
             item["category"] = movie.category
-            return JSONResponse(content={"message": "Se ha modificado la película"}) # devolvemos un diccionario
+            return JSONResponse(status_code=200, content={"message": "Se ha modificado la película"}) # devolvemos un diccionario
 
 
 # Método DELETE, como parámetro de ruta
-@app.delete("/movies/{id}", tags=["movies"], response_model=dict)
+@app.delete("/movies/{id}", tags=["movies"], response_model=dict, status_code=200)
 def update_movie(id: int) -> dict:
     for item in movies:
         if item["id"] == id:
             movies.remove(item)
-            return JSONResponse(content={"message": "Se ha eliminado la película"}) # devolvemos un diccionario
+            return JSONResponse(status_code=200, content={"message": "Se ha eliminado la película"}) # devolvemos un diccionario
 
         
 # Validaciones de tipos de datos
@@ -131,3 +132,6 @@ def update_movie(id: int) -> dict:
 # Tipos de respuestas
 ## importamos JSONResponse desde fastapi.responses, sirve para enviar contenido en formato JSON al cliente
 ## importamos List desde typing, sirve para indicar el modelo de respuesta
+
+#Códigos de estado
+## status_code
