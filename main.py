@@ -1,12 +1,22 @@
-from fastapi import FastAPI, Body, Path, Query
+from fastapi import FastAPI, Body, Path, Query, Request, Depends, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List
-from jwt_manager import create_token
+from jwt_manager import create_token, validate_token
+from fastapi.security import HTTPBearer
 
 app = FastAPI()
 app.title = "Mi primera app con FastAPI"
 app.version = "0.0.1"
+
+# Creamos una nueva clase que herda la clase HTTPBearear
+## funcion call: recibe petición y devuelve la credenciales del usuario
+class JWTBearer(HTTPBearer):
+    async def __call__(self, request: Request):
+        auth = await super().__call__(request)
+        data = validate_token(auth.credentials)
+        if data["email"] != "admin@gmail.com":
+            raise HTTPException(status_code=403, detail="Credenciales inválidas")
 
 # Creamos un nuevo modelo para el usuario
 class User(BaseModel):
@@ -69,7 +79,10 @@ def login(user: User):
         token: str = create_token(user.dict())
         return JSONResponse(status_code=200, content=token)
 
-@app.get("/movies", tags=["movies"], response_model=List[Movie], status_code=200)
+@app.get("/movies", tags=["movies"], 
+         response_model=List[Movie], 
+         status_code=200, 
+         dependencies=[Depends(JWTBearer())])
 def get_movies() -> List[Movie]:
     return JSONResponse(status_code=200, content = movies)
 
@@ -152,5 +165,11 @@ def update_movie(id: int) -> dict:
 ## creamos archivo jwt_manager.py
 ## ahora importamos create_token(que está en el el archivo jwt_manager.py)
 
-#Validando tokens
+# Validando tokens
 ## vamos a la instancia del usuario
+## en jwt_manager.py importamos decode.
+
+# Middlewares de autenticación
+## importamos validate_token, request
+## importamos from fastapi.security import HTTPBearer
+## importamos Depends, se le pasa la clase de la cual depende
