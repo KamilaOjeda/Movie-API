@@ -64,7 +64,10 @@ def message():
 # Creamos nueva ruta que permita al usuario loguearse
 @app.post("/login", tags=["auth"])
 def login(user: User):
-    return user
+    ## Validando token con el create_token que ya tenemos
+    if user.email == "admin@gmail.com" and user.password == "adminpass":
+        token: str = create_token(user.dict())
+        return JSONResponse(status_code=200, content=token)
 
 @app.get("/movies", tags=["movies"], response_model=List[Movie], status_code=200)
 def get_movies() -> List[Movie]:
@@ -148,3 +151,6 @@ def update_movie(id: int) -> dict:
 ## pip3 install pyjwt
 ## creamos archivo jwt_manager.py
 ## ahora importamos create_token(que está en el el archivo jwt_manager.py)
+
+#Validando tokens
+## vamos a la instancia del usuario
